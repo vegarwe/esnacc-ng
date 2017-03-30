@@ -91,7 +91,8 @@ DISTCLEANFILES += compiler/esnacc.1
 endif
 
 compiler/esnacc.1: compiler/esnacc.xml
-	$(XSLTPROC) --novalid -o $@ $(DOCBOOK_LOCATION) $<
+	test  -z "$(XSLTPROC)" || $(XSLTPROC) --novalid -o $@ $(DOCBOOK_LOCATION) $<
+	@test -z "$(XSLTPROC)" && echo "Not generating documentation, xsltproc missing"; true
 
 CLEANFILES += compiler/core/lex-asn1.c \
 	compiler/core/y.output \
