@@ -345,9 +345,9 @@ AsnString& AsnString::operator=(const char* str)
 {
 
 	if (str == NULL)
-		erase();
+		s.erase();
 	else
-		assign(str);
+		s.assign(str);
 	
 	return *this;
 }
@@ -476,7 +476,7 @@ void AsnString::BDecContent(const AsnBuf &b, AsnTag tagId, AsnLen elmtLen, AsnLe
 	FUNC("AsnString::BDecContent()");
 
 	// Erase the existing characters
-	erase();
+	s.erase();
 
 	// If tag is constructed...
 	if (TAG_IS_CONS(tagId))
@@ -487,7 +487,7 @@ void AsnString::BDecContent(const AsnBuf &b, AsnTag tagId, AsnLen elmtLen, AsnLe
 	{
         if (elmtLen != INDEFINITE_LEN) {
             if (elmtLen > 0) {
-                b.GetSeg(*this, elmtLen);
+                b.GetSeg(s, elmtLen);
                 bytesDecoded += elmtLen;
             }
         }
@@ -539,7 +539,7 @@ void AsnString::BDecConsString(const AsnBuf &b, AsnLen elmtLen,
 
             totalElmtsLen += innerLen;
 
-            append(seg, innerLen);
+            s.append(seg, innerLen);
             delete [] seg;
         } else if (innerTag == MAKE_TAG_ID (UNIV, CONS, OCTETSTRING_TAG_CODE)) {
             BDecConsString(b, innerLen, totalElmtsLen);
@@ -786,7 +786,7 @@ AsnLen WideAsnString::CombineConsString(const AsnBuf &b, AsnLen elmtLen,
 
 bool NumericString::check() const
 {
-	for (const_iterator i = begin(); i != end(); ++i)
+	for (std::string::const_iterator i = s.begin(); i != s.end(); ++i)
 	{
 		// Check for 0-9
 		if ((*i < '0') || (*i > '9'))
@@ -830,7 +830,7 @@ const char* PrintableString::PermittedAlphabet(int &sizeAlpha) const
 
 bool PrintableString::check() const
 {
-	for (const_iterator i = begin(); i != end(); ++i)
+	for (std::string::const_iterator i = s.begin(); i != s.end(); ++i)
 	{
 		// Check for A-Z
 		if ((*i < 'A') || (*i > 'Z'))
@@ -1101,13 +1101,13 @@ int AsnString::checkConstraints (ConstraintFailList* pConstraintFails)const
         for (count = 0; count < numSizeConstraints; count++) {
             tmpptr = NULL;
             if (sizeConstraints[count].upperBoundExists == 1) {
-                if (sizeConstraints[count].lowerBound > size()
-                   || sizeConstraints[count].upperBound < size()) {
+                if (sizeConstraints[count].lowerBound > s.size()
+                   || sizeConstraints[count].upperBound < s.size()) {
                     tmpptr =
                         ConstraintErrorStringList[STRING_SIZE_VALUE_RANGE];
                 }
             } else {
-                if (sizeConstraints[count].lowerBound != size()) {
+                if (sizeConstraints[count].lowerBound != s.size()) {
                     tmpptr =
                         ConstraintErrorStringList[STRING_SIZE_SINGLE_VALUE];
                 }
@@ -1163,7 +1163,7 @@ const char* IA5String::PermittedAlphabet(int &sizeAlpha) const
 
 bool IA5String::check() const
 {
-	for (const_iterator i = begin(); i != end(); ++i)
+	for (std::string::const_iterator i = s.begin(); i != s.end(); ++i)
 	{
 		// Check that character is less than 128
 		if ( ((unsigned)*i > 127) )
@@ -1193,7 +1193,7 @@ const char* VisibleString::PermittedAlphabet(int &sizeAlpha) const
 
 bool VisibleString::check() const
 {
-	for (const_iterator i = begin(); i != end(); ++i)
+	for (std::string::const_iterator i = s.begin(); i != s.end(); ++i)
 	{
 		// Check that character is between ' ' and '~' inclusive
 		if ((*i < ' ') || (*i > '~'))

@@ -13,11 +13,17 @@
 #include "cxx-lib/inc/snaccexcept.h"
 
 #ifdef WIN32
+
+// #ifndef strdup
+// #define strdup _strdup
+// #endif
+
 #if defined(_MSC_VER)
 	#pragma warning(push,3)
 #endif
 	#include <string>
     #include <string.h>
+//    #include <functional>
 #if defined(_MSC_VER)
 	#pragma warning(pop)
 #endif
@@ -977,18 +983,26 @@ public:
 //########################################################################
 // SNACC ASN.1 String Types
 //
-class SNACCDLL_API AsnString : public std::string, public AsnType, protected PERGeneral
+class SNACCDLL_API AsnString : public AsnType, protected PERGeneral
 {
 public:
 	AsnString(const char* str = NULL)				 { operator=(str); }
 	AsnString(const std::string& str)				 { operator=(str); }
-    AsnString(const AsnString& aStr) : std::string() { operator=(aStr.c_str()); }     
+    AsnString(const AsnString& aStr)				 { operator=(aStr.s.c_str()); }
 
 	AsnString& operator=(const char* str);
-	AsnString& operator=(const std::string& str)	{ assign(str); return *this; }
-	
+	AsnString& operator=(const std::string& str)	 { s.assign(str); return *this; }
+
 	void Set(const char* str){operator=(str);}
-	 
+
+	// Relay string functions to member variable
+	const std::string& str() const { return s; }
+	const char* c_str() const { return s.c_str(); }
+	size_t length() const {return s.length(); }
+	size_t find(char c, size_t pos = 0) const {return s.find(c, pos);}
+	const char& operator[] (size_t pos) const {return s[pos]; }
+	int compare(const char* c) const { return s.compare(c); }
+
 	virtual const SizeConstraint* SizeConstraints(int &sizeList)const { sizeList = 0; return NULL;}
 	virtual const char* PermittedAlphabet(int &sizeAlpha) const;
 	
@@ -1023,10 +1037,10 @@ public:
 	void PrintXML(std::ostream& os, const char *lpszTitle = NULL) const;
 
 protected:
-	void	Clear()									{ erase(); }
+	void	Clear()									{ s.erase(); }
     char*	getChar(long offset)const;
 	int		numBits()const;
-	void	putChar(char* seg){append(seg, 1);}
+	void	putChar(char* seg){s.append(seg, 1);}
 	int		findB2(int B)const;
 
 	AsnLen	EncodeWithSizeConstraint(AsnBufBits &b)const;
@@ -1034,10 +1048,11 @@ protected:
 	long	FindSizeConstraintBounds(int &iSCLowerBound, int &iSCUpperBound)const;
 
 	virtual AsnLen	Interpret(AsnBufBits &b, long offset)const;  
-	virtual	long	lEncLen()const{return length();}
+	virtual	long	lEncLen()const{return s.length();}
 	virtual void	Deterpret(AsnBufBits &b, AsnLen &bitsDecoded, long offset);
 	virtual void	Allocate(long){/*std::string automatically allocates mem*/};
 		
+   std::string s;
 private:
 	void BDecConsString(const AsnBuf &b, AsnLen elmtLen, AsnLen &bytesDecoded);
 };
